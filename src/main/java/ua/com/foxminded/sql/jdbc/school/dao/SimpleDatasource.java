@@ -1,4 +1,4 @@
-package ua.com.foxminded.sql.jdbc.school;
+package ua.com.foxminded.sql.jdbc.school.dao;
 
 import java.io.IOException;
 import java.sql.Connection;

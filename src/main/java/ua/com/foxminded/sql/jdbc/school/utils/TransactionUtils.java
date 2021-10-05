@@ -1,6 +1,6 @@
 package ua.com.foxminded.sql.jdbc.school.utils;
 
-import ua.com.foxminded.sql.jdbc.school.Datasource;
+import ua.com.foxminded.sql.jdbc.school.dao.Datasource;
 
 import java.sql.Connection;
 import java.sql.SQLException;

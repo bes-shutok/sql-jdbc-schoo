@@ -1,8 +1,8 @@
-package ua.com.foxminded.sql.jdbc.school;
+package ua.com.foxminded.sql.jdbc.school.utils;
 
 import ua.com.foxminded.sql.jdbc.school.dao.CourseDao;
 import ua.com.foxminded.sql.jdbc.school.dao.GroupDao;
-import ua.com.foxminded.sql.jdbc.school.dao.StudentAssignmentImpl;
+import ua.com.foxminded.sql.jdbc.school.dao.impl.StudentAssignmentImpl;
 import ua.com.foxminded.sql.jdbc.school.dao.StudentDao;
 import ua.com.foxminded.sql.jdbc.school.model.Course;
 import ua.com.foxminded.sql.jdbc.school.model.Group;
@@ -91,25 +91,59 @@ public class Generator {
     }
 
     public void generateData(Connection connection, int groupCount, int studentCount) throws SQLException {
-        if (generateGroups(connection, groupCount).isEmpty()) {
+        List<Group> groups = generateGroups(connection, groupCount);
+        if (groups.isEmpty()) {
             throw new AssertionError("Generated groups list cannot be empty");
         }
-        if (generateStudents(connection, studentCount).isEmpty()) {
-            throw new AssertionError("Generated students list cannot be empty");
-        }
-        if (generateCourses(connection).isEmpty()) {
+        List<Course> courses = generateCourses(connection);
+        if (courses.isEmpty()) {
             throw new AssertionError("Generated courses list cannot be empty");
         }
-        if (assignStudents(connection).isEmpty()) {
+        List<Student> students = generateStudents(connection, studentCount, groups, courses);
+        if (students.isEmpty()) {
+            throw new AssertionError("Generated students list cannot be empty");
+        }
+    }
+
+    public void assignStudents(Connection connection) throws SQLException {
+        List<Student> students = assignStudentsToGroups(connection);
+        List<Course> courses = courseDao.findAll(connection);
+        List<StudentAssignment> assignments = assignStudentsToCourses(connection, students, courses);
+        if (assignments.isEmpty()) {
             throw new AssertionError("Generated assignStudents list cannot be empty");
         }
     }
 
-    private List<StudentAssignment> assignStudents(Connection connection) throws SQLException {
+    /**
+     * Randomly assign student to groups. Each group could contain from 10 to 30 student.
+     * It is possible that some groups will be without student or student without groups
+     */
+    private List<Student> assignStudentsToGroups(Connection connection) throws SQLException {
         List<Student> students = studentDao.findAll(connection);
-        List<Course> courses = courseDao.findAll(connection);
+        List<Group> groups = groupDao.findAll(connection);
+        int maxGroupNo = groups.size() - 1;
+        int groupNo = 0;
+        int studentsPerGroup = getRandomCount(10, 30);
+        Long groupId = groups.get(groupNo).getId();
+        for (int i = 0; i < students.size(); i++) {
+            Student student = students.get(i);
+            student.setGroupId(groupId);
+            if (studentsPerGroup == 0) {
+                studentsPerGroup = getRandomCount(10, 30);
+                if (groupNo < maxGroupNo && (students.size() - i) > studentsPerGroup) {
+                    groupId = groups.get(++groupNo).getId();
+                } else {
+                    break;
+                }
+            }
+            studentDao.save(connection, student);
+            studentsPerGroup--;
+        }
+        return students;
+    }
+
+    private List<StudentAssignment> assignStudentsToCourses(Connection connection, List<Student> students, List<Course> courses) throws SQLException {
         List<StudentAssignment> result = new ArrayList<>();
-        System.out.println("Found all");
         for (Student student : students) {
             int coursesCount = getRandomCount(1, 3);
             List<Course> appliedCourses = getRandomCourses(courses, coursesCount);
@@ -159,8 +193,7 @@ public class Generator {
         return String.valueOf(randomChar(alphabet)) + randomChar(alphabet) + "-" + getRandomCount(10, 99);
     }
 
-    private List<Student> generateStudents(Connection connection, int count) throws SQLException {
-        List<Group> groups = groupDao.findAll(connection);
+    private List<Student> generateStudents(Connection connection, int count, List<Group> groups, List<Course> courses) throws SQLException {
         List<Student> result = new ArrayList<>();
         int maxGroupNo = groups.size() - 1;
 
