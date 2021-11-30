@@ -6,6 +6,7 @@ import ua.com.foxminded.sql.jdbc.school.dao.impl.GroupDaoImpl;
 import ua.com.foxminded.sql.jdbc.school.dao.impl.StudentAssignmentImpl;
 import ua.com.foxminded.sql.jdbc.school.dao.impl.StudentDaoImpl;
 import ua.com.foxminded.sql.jdbc.school.model.Group;
+import ua.com.foxminded.sql.jdbc.school.model.Student;
 import ua.com.foxminded.sql.jdbc.school.utils.Generator;
 import ua.com.foxminded.sql.jdbc.school.utils.SqlUtils;
 import ua.com.foxminded.sql.jdbc.school.utils.UserHandler;
@@ -56,51 +57,6 @@ public class SchoolApp implements Closeable {
         this.userHandler = new UserHandler(groupDao, studentDao, courseDao, studentAssignmentDao);
     }
 
-    private void run() throws SQLException {
-        // fill db with generated data
-        transaction(datasource, (connection -> generator.generateData(connection, 10, 200)));
-        transaction(datasource, (generator::assignStudents));
-        System.out.println("Test data generated");
-
-        // show menu in a loop
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-/*        String YES = "Yes";
-        String NO = "No";*/
-        List<String> expectedAnswers = List.of("a", "b", "c", "d", "e", "f");
-
-//todo:
-        System.out.println("Chose from available actions menu:\n" + MENU);
-        switch (getUserAnswer(reader, expectedAnswers)) {
-            // a. Find all groups with less or equals student count
-            case "a" -> findAllGroupsWithLessOrEqualStudentCount(userHandler);
-
-/*            // b. Find all students related to course with given name
-            case "b":
-                findAllStudentsRelatedToCourseWithGivenName(reader);
-                break;
-
-            // c. Add new student
-            case "c":
-                addNewStudent(reader);
-                break;
-
-            // d. Delete student by STUDENT_ID
-            case "d":
-                deleteStudentByStudentId(reader);
-                break;
-
-            // e. Add a student to the course (from a list)
-            case "e":
-                addAStudentToTheCourseFromAList(reader);
-                break;
-
-            // f. Remove the student from one of his or her courses
-            case "f":
-                removeStudentFromCourse(reader);
-                break;*/
-        }
-    }
-
     @Override
     public void close() throws IOException {
         try {
@@ -120,25 +76,73 @@ public class SchoolApp implements Closeable {
         }
     }
 
-    private static void findAllGroupsWithLessOrEqualStudentCount(UserHandler userHandler) {
+    private void run() throws SQLException {
+        // fill db with generated data
+        transaction(datasource, (connection -> generator.generateData(connection, 10, 200)));
+        transaction(datasource, (generator::assignStudents));
+        System.out.println("Test data generated");
+
+        // show menu in a loop
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+/*        String YES = "Yes";
+        String NO = "No";*/
+        List<String> expectedAnswers = List.of("a", "b", "c", "d", "e", "f");
+
+//todo:
+        System.out.println("Chose from available actions menu:\n" + MENU);
+        switch (getUserAnswer(reader, expectedAnswers)) {
+            // a. Find all groups with less or equals student count
+            case "a" -> findAllGroupsWithLessOrEqualStudentCount(datasource, userHandler);
+
+            // b. Find all students related to course with given name
+            case "b" ->  findAllStudentsRelatedToCourseWithGivenName(datasource, userHandler);
+/*
+            // c. Add new student
+            case "c":
+                addNewStudent(reader);
+                break;
+
+            // d. Delete student by STUDENT_ID
+            case "d":
+                deleteStudentByStudentId(reader);
+                break;
+
+            // e. Add a student to the course (from a list)
+            case "e":
+                addAStudentToTheCourseFromAList(reader);
+                break;
+
+            // f. Remove the student from one of his or her courses
+            case "f":
+                removeStudentFromCourse(reader);
+                break;*/
+            default -> throw new IllegalStateException("Unexpected value: " + getUserAnswer(reader, expectedAnswers));
+        }
+    }
+
+    /**
+     * Find all groups with less or equals student count
+     */
+    private static void findAllGroupsWithLessOrEqualStudentCount(Datasource datasource, UserHandler userHandler)
+            throws SQLException {
         Scanner myInput = new Scanner(System.in);
         System.out.print("Find all groups with less or equals student count.\nEnter student count: ");
         int maxNumberOfStudents = myInput.nextInt();
-        List<Group> groups = userHandler.findAllGroupsByStudentCount(maxNumberOfStudents);
-        System.out.println("Groups with less or equals student count: " + groups);
+        List<Group> groups = userHandler.findAllGroupsByStudentCount(datasource, maxNumberOfStudents);
+        System.out.println("Groups with less or equals student count:\n" + groups);
     }
 
-/*
-    private static String read(ClassLoader classLoader, String fileName) {
-        File file = new File(Objects.requireNonNull(classLoader.getResource(fileName)).getFile());
-        String content = "";
-        try {
-            content = new String(Files.readAllBytes(file.toPath()));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return content;
-    }*/
+    /**
+     * Find all student related to course with given name
+     */
+    private void findAllStudentsRelatedToCourseWithGivenName(Datasource datasource, UserHandler userHandler)
+            throws SQLException {
+        Scanner myInput = new Scanner(System.in);
+        System.out.print("Find all student related to course with given name.\nEnter course name: ");
+        String courseName = myInput.next();
+        List<Student> students = userHandler.findAllStudentsForGroup(datasource, courseName);
+        System.out.println("Groups with less or equals student count:\n" + students);
+    }
 
     private static String getUserAnswer(BufferedReader reader, List<String> expectedAnswers) {
         String answer = "";

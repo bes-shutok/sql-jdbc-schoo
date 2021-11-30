@@ -3,7 +3,7 @@ package ua.com.foxminded.sql.jdbc.school.model;
 import java.util.Objects;
 
 public class StudentAssignment {
-    public static final String STUDENT_ASSIGNMENT_TABLE_NAME = "students_assignments";
+    public static final String TABLE_NAME = "students_assignments";
 
     private final Long studentId;
     private final Long courseId;

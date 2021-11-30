@@ -10,18 +10,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static ua.com.foxminded.sql.jdbc.school.model.Course.*;
-
 public class CourseDaoImpl extends AbstractCrudDao<Course, Long> implements CourseDao {
 
-    private static final String CREATE_COURSE = "INSERT INTO " + COURSES_TABLE_NAME + " (" +
-            COURSE_NAME + ", " + COURSE_DESCRIPTION + ") " + "VALUES (?, ?);";
-    private static final String UPDATE_COURSE = "UPDATE " + COURSES_TABLE_NAME + " SET " +
-            COURSE_NAME + " = ?, " + COURSE_DESCRIPTION + " = ? " + "WHERE " + COURSE_ID + " = ?;";
-    private static final String ALL_COURSES = "SELECT * FROM " + COURSES_TABLE_NAME + ";";
-    private static final String FIND_COURSE_BY_ID = "SELECT * FROM " + COURSES_TABLE_NAME
-            + " WHERE " + COURSE_ID + " = ?;";
-    private static final String DELETE_COURSE = "DELETE FROM " + COURSES_TABLE_NAME + " WHERE " + COURSE_ID + " = ?;";
+    private static final String CREATE_COURSE = "INSERT INTO " + Course.TABLE_NAME + " (" +
+            Course.COURSE_NAME + ", " + Course.COURSE_DESCRIPTION + ") " + "VALUES (?, ?);";
+
+    private static final String UPDATE_COURSE = "UPDATE " + Course.TABLE_NAME + " SET " + Course.COURSE_NAME
+            + " = ?, " + Course.COURSE_DESCRIPTION + " = ? " + "WHERE " + Course.COURSE_ID + " = ?;";
+
+    private static final String ALL_COURSES = "SELECT * FROM " + Course.TABLE_NAME + ";";
+
+    private static final String FIND_COURSE_BY_ID = "SELECT * FROM " + Course.TABLE_NAME
+            + " WHERE " + Course.COURSE_ID + " = ?;";
+
+    private static final String DELETE_COURSE = "DELETE FROM " + Course.TABLE_NAME + " WHERE " + Course.COURSE_ID
+            + " = ?;";
 
     @Override
     protected Course create(Connection connection, Course entity) throws SQLException {
@@ -54,9 +57,9 @@ public class CourseDaoImpl extends AbstractCrudDao<Course, Long> implements Cour
             while (resultSet.next()) {
                 result.add(
                         new Course(
-                                resultSet.getLong(COURSE_ID),
-                                resultSet.getString(COURSE_NAME),
-                                resultSet.getString(COURSE_DESCRIPTION)
+                                resultSet.getLong(Course.COURSE_ID),
+                                resultSet.getString(Course.COURSE_NAME),
+                                resultSet.getString(Course.COURSE_DESCRIPTION)
                         )
                 );
             }
@@ -77,8 +80,8 @@ public class CourseDaoImpl extends AbstractCrudDao<Course, Long> implements Cour
                 result = Optional.of(
                         new Course(
                                 id,
-                                resultSet.getString(COURSE_NAME),
-                                resultSet.getString(COURSE_DESCRIPTION)
+                                resultSet.getString(Course.COURSE_NAME),
+                                resultSet.getString(Course.COURSE_DESCRIPTION)
                         )
                 );
             }

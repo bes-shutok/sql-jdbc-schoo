@@ -11,15 +11,17 @@ import java.util.Optional;
 
 import static ua.com.foxminded.sql.jdbc.school.model.Course.*;
 import static ua.com.foxminded.sql.jdbc.school.model.Student.STUDENT_ID;
-import static ua.com.foxminded.sql.jdbc.school.model.StudentAssignment.STUDENT_ASSIGNMENT_TABLE_NAME;
 
 public class StudentAssignmentImpl implements StudentAssignmentDao {
-    private static final String CREATE_STUDENT_ASSIGNMENT = "INSERT INTO " + STUDENT_ASSIGNMENT_TABLE_NAME + " (" +
+    private static final String CREATE_STUDENT_ASSIGNMENT = "INSERT INTO " + StudentAssignment.TABLE_NAME + " (" +
             STUDENT_ID + ", " + COURSE_ID + ") " + "VALUES (?, ?);";
-    private static final String ALL_STUDENT_ASSIGNMENTS = "SELECT * FROM " + STUDENT_ASSIGNMENT_TABLE_NAME + ";";
-    private static final String FIND_STUDENT_ASSIGNMENT = "SELECT * FROM " + STUDENT_ASSIGNMENT_TABLE_NAME
+
+    private static final String ALL_STUDENT_ASSIGNMENTS = "SELECT * FROM " + StudentAssignment.TABLE_NAME + ";";
+
+    private static final String FIND_STUDENT_ASSIGNMENT = "SELECT * FROM " + StudentAssignment.TABLE_NAME
             + " WHERE " + STUDENT_ID + " = ? AND " + COURSE_ID + " = ?;";
-    private static final String DELETE_STUDENT_ASSIGNMENT = "DELETE FROM " + STUDENT_ASSIGNMENT_TABLE_NAME
+
+    private static final String DELETE_STUDENT_ASSIGNMENT = "DELETE FROM " + StudentAssignment.TABLE_NAME
             + " WHERE " + STUDENT_ID + " = ? AND " + COURSE_ID + " = ?;";
 
     @Override

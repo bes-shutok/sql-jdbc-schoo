@@ -99,7 +99,7 @@ public class Generator {
         if (courses.isEmpty()) {
             throw new AssertionError("Generated courses list cannot be empty");
         }
-        List<Student> students = generateStudents(connection, studentCount, groups, courses);
+        List<Student> students = generateStudents(connection, studentCount, groups);
         if (students.isEmpty()) {
             throw new AssertionError("Generated students list cannot be empty");
         }
@@ -193,7 +193,7 @@ public class Generator {
         return String.valueOf(randomChar(alphabet)) + randomChar(alphabet) + "-" + getRandomCount(10, 99);
     }
 
-    private List<Student> generateStudents(Connection connection, int count, List<Group> groups, List<Course> courses) throws SQLException {
+    private List<Student> generateStudents(Connection connection, int count, List<Group> groups) throws SQLException {
         List<Student> result = new ArrayList<>();
         int maxGroupNo = groups.size() - 1;
 

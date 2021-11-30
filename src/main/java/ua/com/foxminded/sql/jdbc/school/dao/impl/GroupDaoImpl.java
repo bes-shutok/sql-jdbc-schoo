@@ -10,19 +10,23 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static ua.com.foxminded.sql.jdbc.school.model.Group.*;
-
 
 public class GroupDaoImpl extends AbstractCrudDao<Group, Long> implements GroupDao {
-    private static final String CREATE_GROUP = "INSERT INTO " + GROUPS_TABLE_NAME + " (" +
-            GROUP_NAME + ") " + "VALUES (?);";
-    private static final String UPDATE_GROUP = "UPDATE " + GROUPS_TABLE_NAME + " SET " +
-            GROUP_NAME + " = ?, " + "WHERE " + GROUP_ID + " = ?;";
-    private static final String ALL_GROUPS = "SELECT * FROM " + GROUPS_TABLE_NAME + ";";
-    private static final String FIND_GROUP_BY_ID = "SELECT * FROM " + GROUPS_TABLE_NAME + " WHERE " + GROUP_ID + " = ?;";
-    private static final String FIND_GROUP_BY_NAME = "SELECT * FROM " + GROUPS_TABLE_NAME
-            + " WHERE " + GROUP_NAME + " = ?;";
-    private static final String DELETE_GROUP = "DELETE FROM " + GROUPS_TABLE_NAME + " WHERE " + GROUP_ID + " = ?;";
+    private static final String CREATE_GROUP = "INSERT INTO " + Group.TABLE_NAME + " (" +
+            Group.GROUP_NAME + ") " + "VALUES (?);";
+
+    private static final String UPDATE_GROUP = "UPDATE " + Group.TABLE_NAME + " SET " +
+            Group.GROUP_NAME + " = ?, " + "WHERE " + Group.GROUP_ID + " = ?;";
+
+    private static final String ALL_GROUPS = "SELECT * FROM " + Group.TABLE_NAME + ";";
+
+    private static final String FIND_GROUP_BY_ID = "SELECT * FROM " + Group.TABLE_NAME + " WHERE " + Group.GROUP_ID
+            + " = ?;";
+
+    private static final String FIND_GROUP_BY_NAME = "SELECT * FROM " + Group.TABLE_NAME
+            + " WHERE " + Group.GROUP_NAME + " = ?;";
+
+    private static final String DELETE_GROUP = "DELETE FROM " + Group.TABLE_NAME + " WHERE " + Group.GROUP_ID + " = ?;";
 
     @Override
     protected Group create(Connection connection, Group entity) throws SQLException {
@@ -52,7 +56,7 @@ public class GroupDaoImpl extends AbstractCrudDao<Group, Long> implements GroupD
         try (PreparedStatement st = con.prepareStatement(ALL_GROUPS)) {
             ResultSet resultSet = st.executeQuery();
             while (resultSet.next()) {
-                result.add(new Group(resultSet.getLong(GROUP_ID), resultSet.getString(GROUP_NAME)));
+                result.add(new Group(resultSet.getLong(Group.GROUP_ID), resultSet.getString(Group.GROUP_NAME)));
             }
         }
         return result;
@@ -65,7 +69,7 @@ public class GroupDaoImpl extends AbstractCrudDao<Group, Long> implements GroupD
             st.setLong(1, id);
             ResultSet resultSet = st.executeQuery();
             if (resultSet.next()) {
-                result = Optional.of(new Group(id, resultSet.getString(GROUP_NAME)));
+                result = Optional.of(new Group(id, resultSet.getString(Group.GROUP_NAME)));
             }
         }
         return result;
@@ -78,7 +82,7 @@ public class GroupDaoImpl extends AbstractCrudDao<Group, Long> implements GroupD
             st.setString(1, name);
             ResultSet resultSet = st.executeQuery();
             if (resultSet.next()) {
-                result = Optional.of(new Group(resultSet.getLong(GROUP_ID), name));
+                result = Optional.of(new Group(resultSet.getLong(Group.GROUP_ID), name));
             }
         }
         return result;

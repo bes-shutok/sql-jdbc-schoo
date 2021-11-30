@@ -11,18 +11,22 @@ import java.util.List;
 import java.util.Optional;
 
 import static ua.com.foxminded.sql.jdbc.school.model.Group.GROUP_ID;
-import static ua.com.foxminded.sql.jdbc.school.model.Student.*;
 
 public class StudentDaoImpl extends AbstractCrudDao<Student, Long> implements StudentDao {
-    private static final String CREATE_STUDENT = "INSERT INTO " + STUDENTS_TABLE_NAME + " (" +
-            FIRST_NAME + ", " + LAST_NAME + ", " + GROUP_ID + ") " + "VALUES (?, ?, ?);";
-    private static final String UPDATE_STUDENT = "UPDATE " + STUDENTS_TABLE_NAME + " SET " +
-            FIRST_NAME + " = ?, " + LAST_NAME + " = ?, " + GROUP_ID + " = ? " + "WHERE " + STUDENT_ID + " = ?;";
-    private static final String ALL_STUDENTS = "SELECT * FROM " + STUDENTS_TABLE_NAME + ";";
-    private static final String FIND_STUDENT_BY_ID = "SELECT * FROM " + STUDENTS_TABLE_NAME
-            + " WHERE " + STUDENT_ID + " = ?;";
-    private static final String DELETE_STUDENT = "DELETE FROM " + STUDENTS_TABLE_NAME
-            + " WHERE " + STUDENT_ID + " = ?;";
+    private static final String CREATE_STUDENT = "INSERT INTO " + Student.TABLE_NAME + " (" +
+            Student.FIRST_NAME + ", " + Student.LAST_NAME + ", " + GROUP_ID + ") " + "VALUES (?, ?, ?);";
+
+    private static final String UPDATE_STUDENT = "UPDATE " + Student.TABLE_NAME + " SET " +
+            Student.FIRST_NAME + " = ?, " + Student.LAST_NAME + " = ?, " + GROUP_ID + " = ? " + "WHERE "
+            + Student.STUDENT_ID + " = ?;";
+
+    private static final String ALL_STUDENTS = "SELECT * FROM " + Student.TABLE_NAME + ";";
+
+    private static final String FIND_STUDENT_BY_ID = "SELECT * FROM " + Student.TABLE_NAME
+            + " WHERE " + Student.STUDENT_ID + " = ?;";
+
+    private static final String DELETE_STUDENT = "DELETE FROM " + Student.TABLE_NAME
+            + " WHERE " + Student.STUDENT_ID + " = ?;";
 
     @Override
     protected Student create(Connection connection, Student entity) throws SQLException {
@@ -58,9 +62,9 @@ public class StudentDaoImpl extends AbstractCrudDao<Student, Long> implements St
             while (resultSet.next()) {
                 result.add(
                         new Student(
-                                resultSet.getLong(STUDENT_ID),
-                                resultSet.getString(FIRST_NAME),
-                                resultSet.getString(LAST_NAME),
+                                resultSet.getLong(Student.STUDENT_ID),
+                                resultSet.getString(Student.FIRST_NAME),
+                                resultSet.getString(Student.LAST_NAME),
                                 resultSet.getLong(GROUP_ID)
                         )
                 );
@@ -79,8 +83,8 @@ public class StudentDaoImpl extends AbstractCrudDao<Student, Long> implements St
                 result = Optional.of(
                         new Student(
                                 id,
-                                resultSet.getString(FIRST_NAME),
-                                resultSet.getString(LAST_NAME),
+                                resultSet.getString(Student.FIRST_NAME),
+                                resultSet.getString(Student.LAST_NAME),
                                 resultSet.getLong(GROUP_ID)
                         )
                 );

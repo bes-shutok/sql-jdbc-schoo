@@ -3,8 +3,7 @@ package ua.com.foxminded.sql.jdbc.school.model;
 import java.util.Objects;
 
 public class Student extends LongEntity {
-    public static final String STUDENTS_TABLE_NAME = "students";
-    public static final String STUDENT_ASSIGNMENT_TABLE_NAME = "students_assignments";
+    public static final String TABLE_NAME = "students";
     public static final String STUDENT_ID = "student_id";
     public static final String FIRST_NAME = "first_name";
     public static final String LAST_NAME = "last_name";
@@ -55,5 +54,10 @@ public class Student extends LongEntity {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), firstName, lastName);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%n%s %s (group %d)", firstName, lastName, groupId);
     }
 }

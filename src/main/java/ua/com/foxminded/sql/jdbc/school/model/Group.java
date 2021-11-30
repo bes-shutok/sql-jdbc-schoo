@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class Group extends LongEntity {
 
-    public static final String GROUPS_TABLE_NAME = "groups";
+    public static final String TABLE_NAME = "groups";
     public static final String GROUP_ID = "group_id";
     public static final String GROUP_NAME = "group_name";
 
@@ -35,5 +35,10 @@ public class Group extends LongEntity {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), name);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%n%s (%s %d)", name, GROUP_ID, getId());
     }
 }

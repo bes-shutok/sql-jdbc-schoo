@@ -7,15 +7,15 @@ import java.sql.*;
 import static ua.com.foxminded.sql.jdbc.school.utils.TransactionUtils.transaction;
 
 public class SqlUtils {
-    public static void executeSqlScript(Connection connection, String sqlScript) throws SQLException {
-        try (Statement statement = connection.createStatement()) {
+    public static void executeSqlScript(Connection con, String sqlScript) throws SQLException {
+        try (Statement statement = con.createStatement()) {
             statement.executeUpdate(sqlScript);
         }
     }
 
     public static void executeSqlScriptFile(Datasource datasource, String fileName) throws SQLException {
-        transaction(datasource, (connection) ->
-                SqlUtils.executeSqlScript(connection, ResourceUtils.loadTextFileFromResources(fileName)));
+        transaction(datasource, (con) ->
+                SqlUtils.executeSqlScript(con, ResourceUtils.loadTextFileFromResources(fileName)));
     }
 
     public static void executeUpdate(Connection con, String statement, Object... params) throws SQLException {
