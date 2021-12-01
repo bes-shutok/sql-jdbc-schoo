@@ -16,7 +16,7 @@ public class GroupDaoImpl extends AbstractCrudDao<Group, Long> implements GroupD
             Group.GROUP_NAME + ") " + "VALUES (?);";
 
     private static final String UPDATE_GROUP = "UPDATE " + Group.TABLE_NAME + " SET " +
-            Group.GROUP_NAME + " = ?, " + "WHERE " + Group.GROUP_ID + " = ?;";
+            Group.GROUP_NAME + " = ? " + "WHERE " + Group.GROUP_ID + " = ?;";
 
     private static final String ALL_GROUPS = "SELECT * FROM " + Group.TABLE_NAME + ";";
 

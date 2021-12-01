@@ -3,7 +3,7 @@ package ua.com.foxminded.sql.jdbc.school;
 import ua.com.foxminded.sql.jdbc.school.dao.*;
 import ua.com.foxminded.sql.jdbc.school.dao.impl.CourseDaoImpl;
 import ua.com.foxminded.sql.jdbc.school.dao.impl.GroupDaoImpl;
-import ua.com.foxminded.sql.jdbc.school.dao.impl.StudentAssignmentImpl;
+import ua.com.foxminded.sql.jdbc.school.dao.impl.StudentAssignmentDaoImpl;
 import ua.com.foxminded.sql.jdbc.school.dao.impl.StudentDaoImpl;
 import ua.com.foxminded.sql.jdbc.school.model.Group;
 import ua.com.foxminded.sql.jdbc.school.model.Student;
@@ -37,7 +37,7 @@ public class SchoolApp implements Closeable {
     private final GroupDao groupDao;
     private final StudentDao studentDao;
     private final CourseDao courseDao;
-    private final StudentAssignmentImpl studentAssignmentDao;
+    private final StudentAssignmentDaoImpl studentAssignmentDao;
 
     private final Generator generator;
     private final UserHandler userHandler;
@@ -52,7 +52,7 @@ public class SchoolApp implements Closeable {
         this.groupDao = new GroupDaoImpl();
         this.studentDao = new StudentDaoImpl();
         this.courseDao = new CourseDaoImpl();
-        this.studentAssignmentDao = new StudentAssignmentImpl();
+        this.studentAssignmentDao = new StudentAssignmentDaoImpl();
         this.generator = new Generator(groupDao, studentDao, courseDao, studentAssignmentDao);
         this.userHandler = new UserHandler(groupDao, studentDao, courseDao, studentAssignmentDao);
     }

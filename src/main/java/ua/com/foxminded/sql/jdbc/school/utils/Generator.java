@@ -2,7 +2,7 @@ package ua.com.foxminded.sql.jdbc.school.utils;
 
 import ua.com.foxminded.sql.jdbc.school.dao.CourseDao;
 import ua.com.foxminded.sql.jdbc.school.dao.GroupDao;
-import ua.com.foxminded.sql.jdbc.school.dao.impl.StudentAssignmentImpl;
+import ua.com.foxminded.sql.jdbc.school.dao.impl.StudentAssignmentDaoImpl;
 import ua.com.foxminded.sql.jdbc.school.dao.StudentDao;
 import ua.com.foxminded.sql.jdbc.school.model.Course;
 import ua.com.foxminded.sql.jdbc.school.model.Group;
@@ -79,10 +79,10 @@ public class Generator {
     private final GroupDao groupDao;
     private final StudentDao studentDao;
     private final CourseDao courseDao;
-    private final StudentAssignmentImpl studentAssignmentDao;
+    private final StudentAssignmentDaoImpl studentAssignmentDao;
 
     public Generator(
-            GroupDao groupDao, StudentDao studentDao, CourseDao courseDao, StudentAssignmentImpl studentAssignmentDao
+            GroupDao groupDao, StudentDao studentDao, CourseDao courseDao, StudentAssignmentDaoImpl studentAssignmentDao
     ) {
         this.groupDao = groupDao;
         this.studentDao = studentDao;
@@ -149,7 +149,7 @@ public class Generator {
             List<Course> appliedCourses = getRandomCourses(courses, coursesCount);
             for (Course course : appliedCourses) {
                 result.add(
-                        studentAssignmentDao.save(connection, new StudentAssignment(student.getId(), course.getId()))
+                        studentAssignmentDao.create(connection, new StudentAssignment(student.getId(), course.getId()))
                 );
             }
         }

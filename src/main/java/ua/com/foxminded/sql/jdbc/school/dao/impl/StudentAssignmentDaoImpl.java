@@ -12,7 +12,7 @@ import java.util.Optional;
 import static ua.com.foxminded.sql.jdbc.school.model.Course.*;
 import static ua.com.foxminded.sql.jdbc.school.model.Student.STUDENT_ID;
 
-public class StudentAssignmentImpl implements StudentAssignmentDao {
+public class StudentAssignmentDaoImpl implements StudentAssignmentDao {
     private static final String CREATE_STUDENT_ASSIGNMENT = "INSERT INTO " + StudentAssignment.TABLE_NAME + " (" +
             STUDENT_ID + ", " + COURSE_ID + ") " + "VALUES (?, ?);";
 
@@ -25,7 +25,7 @@ public class StudentAssignmentImpl implements StudentAssignmentDao {
             + " WHERE " + STUDENT_ID + " = ? AND " + COURSE_ID + " = ?;";
 
     @Override
-    public StudentAssignment save(Connection connection, StudentAssignment entity) throws SQLException {
+    public StudentAssignment create(Connection connection, StudentAssignment entity) throws SQLException {
         SqlUtils.executeUpdate(connection, CREATE_STUDENT_ASSIGNMENT, entity.getStudentId(), entity.getCourseId());
         return entity;
     }

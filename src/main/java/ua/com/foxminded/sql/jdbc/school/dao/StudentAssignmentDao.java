@@ -15,8 +15,7 @@ public interface StudentAssignmentDao {
 
     List<StudentAssignment> findAll(Connection connection) throws SQLException;
 
-    // we treat create and update operation in a single method
-    StudentAssignment save(Connection connection, StudentAssignment entity) throws SQLException;
+    StudentAssignment create(Connection connection, StudentAssignment entity) throws SQLException;
 
     void deleteByIds(Connection connection, Long studentId, Long courseId) throws SQLException;
 

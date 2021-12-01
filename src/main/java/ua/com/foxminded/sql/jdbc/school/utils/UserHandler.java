@@ -4,7 +4,7 @@ import ua.com.foxminded.sql.jdbc.school.dao.CourseDao;
 import ua.com.foxminded.sql.jdbc.school.dao.Datasource;
 import ua.com.foxminded.sql.jdbc.school.dao.GroupDao;
 import ua.com.foxminded.sql.jdbc.school.dao.StudentDao;
-import ua.com.foxminded.sql.jdbc.school.dao.impl.StudentAssignmentImpl;
+import ua.com.foxminded.sql.jdbc.school.dao.impl.StudentAssignmentDaoImpl;
 import ua.com.foxminded.sql.jdbc.school.model.Course;
 import ua.com.foxminded.sql.jdbc.school.model.Group;
 import ua.com.foxminded.sql.jdbc.school.model.Student;
@@ -30,10 +30,10 @@ public class UserHandler {
     private final GroupDao groupDao;
     private final StudentDao studentDao;
     private final CourseDao courseDao;
-    private final StudentAssignmentImpl studentAssignmentDao;
+    private final StudentAssignmentDaoImpl studentAssignmentDao;
 
     public UserHandler(
-            GroupDao groupDao, StudentDao studentDao, CourseDao courseDao, StudentAssignmentImpl studentAssignmentDao
+            GroupDao groupDao, StudentDao studentDao, CourseDao courseDao, StudentAssignmentDaoImpl studentAssignmentDao
     ) {
         this.groupDao = groupDao;
         this.studentDao = studentDao;
