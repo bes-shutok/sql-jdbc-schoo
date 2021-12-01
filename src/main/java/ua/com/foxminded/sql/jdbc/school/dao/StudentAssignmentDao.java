@@ -9,7 +9,6 @@ import java.util.Optional;
 
 public interface StudentAssignmentDao {
 
-
     // absence of result is not always an error
     Optional<StudentAssignment> findByIds(Connection connection, Long studentId, Long courseId) throws SQLException;
 

@@ -16,8 +16,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
         <maven-compiler-plugin.version>3.8.0</maven-compiler-plugin.version>
-        <junit.version>5.8.0-M1</junit.version>
-        <postgresql.version>42.2.24</postgresql.version>
+        <junit.version>5.8.1</junit.version>
+        <postgresql.version>42.3.1</postgresql.version>
+        <testcontainers.version>1.16.2</testcontainers.version>
         <HikariCP.version>4.0.3</HikariCP.version>
     </properties>
 
@@ -38,13 +39,36 @@
             <version>${postgresql.version}</version>
             <scope>runtime</scope>
         </dependency>
-<!--
-        &lt;!&ndash; https://mvnrepository.com/artifact/com.zaxxer/HikariCP &ndash;&gt;
+
+        <!--Test dependencies-->
         <dependency>
-            <groupId>com.zaxxer</groupId>
-            <artifactId>HikariCP</artifactId>
-            <version>${HikariCP.version}</version>
-        </dependency>-->
+            <groupId>org.testcontainers</groupId>
+            <artifactId>testcontainers</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${testcontainers.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+                &lt;!&ndash; https://mvnrepository.com/artifact/com.zaxxer/HikariCP &ndash;&gt;
+                <dependency>
+                    <groupId>com.zaxxer</groupId>
+                    <artifactId>HikariCP</artifactId>
+                    <version>${HikariCP.version}</version>
+                </dependency>-->
 
 
     </dependencies>

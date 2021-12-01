@@ -2,16 +2,8 @@ package ua.com.foxminded.sql.jdbc.school.model;
 
 import java.util.Objects;
 
-public class StudentAssignment {
+public record StudentAssignment(Long studentId, Long courseId) {
     public static final String TABLE_NAME = "students_assignments";
-
-    private final Long studentId;
-    private final Long courseId;
-
-    public StudentAssignment(Long studentId, Long courseId) {
-        this.studentId = studentId;
-        this.courseId = courseId;
-    }
 
     public Long getStudentId() {
         return studentId;

@@ -25,6 +25,9 @@ import static ua.com.foxminded.sql.jdbc.school.utils.TransactionUtils.transactio
 
 public class SchoolApp implements Closeable {
 
+    public static final String DROP_SCHEMA = "sql/drop_schema.sql";
+    public static final String INIT_SCHEMA = "sql/init_schema.sql";
+
     private final static String MENU = """
             a. Find all groups with less or equals student count
             b. Find all students related to course with given name
@@ -46,7 +49,7 @@ public class SchoolApp implements Closeable {
         this.datasource = datasource;
 
         // setup database
-        SqlUtils.executeSqlScriptFile(datasource, "sql/init_schema.sql");
+        SqlUtils.executeSqlScriptFile(datasource, INIT_SCHEMA);
 
         // setup dao components
         this.groupDao = new GroupDaoImpl();
@@ -60,7 +63,7 @@ public class SchoolApp implements Closeable {
     @Override
     public void close() throws IOException {
         try {
-            SqlUtils.executeSqlScriptFile(datasource, "sql/drop_schema.sql");
+            SqlUtils.executeSqlScriptFile(datasource, DROP_SCHEMA);
         } catch (SQLException e) {
             throw new IOException(e);
         }

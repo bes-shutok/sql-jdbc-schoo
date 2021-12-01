@@ -50,9 +50,9 @@ public class StudentDaoImpl extends AbstractCrudDao<Student, Long> implements St
     }
 
     /**
-     * We cannot use {@link SqlUtils} methods here as {@link ResultSet} have to be parsed at place - it is closed
-     * with the statement closing. And we cannot delegate its parsing to {@link SqlUtils} since it would require
-     * passing business logic to the util methods, and we don't wont to do it.
+     * Here we need to parse {@link ResultSet} at place. We still could use {@link SqlUtils} method by providing
+     * it with {@link ResultSet} mapper but in this case we would be providing parameters as Objects
+     * (to generalize the method) and thus lose type validation. All in all it is more readable as it is here
      */
     @Override
     public List<Student> findAll(Connection con) throws SQLException {
