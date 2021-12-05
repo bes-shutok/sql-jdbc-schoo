@@ -14,7 +14,7 @@ public interface StudentAssignmentDao {
 
     List<StudentAssignment> findAll(Connection connection) throws SQLException;
 
-    StudentAssignment create(Connection connection, StudentAssignment entity) throws SQLException;
+    void create(Connection connection, StudentAssignment entity) throws SQLException;
 
     void deleteByIds(Connection connection, Long studentId, Long courseId) throws SQLException;
 

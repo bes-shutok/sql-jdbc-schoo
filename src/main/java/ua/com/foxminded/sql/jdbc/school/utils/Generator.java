@@ -142,15 +142,17 @@ public class Generator {
         return students;
     }
 
-    private List<StudentAssignment> assignStudentsToCourses(Connection connection, List<Student> students, List<Course> courses) throws SQLException {
+    private List<StudentAssignment> assignStudentsToCourses(
+            Connection con, List<Student> students, List<Course> courses
+    ) throws SQLException {
         List<StudentAssignment> result = new ArrayList<>();
         for (Student student : students) {
             int coursesCount = getRandomCount(1, 3);
             List<Course> appliedCourses = getRandomCourses(courses, coursesCount);
             for (Course course : appliedCourses) {
-                result.add(
-                        studentAssignmentDao.create(connection, new StudentAssignment(student.getId(), course.getId()))
-                );
+                StudentAssignment assignment = new StudentAssignment(student.getId(), course.getId());
+                studentAssignmentDao.create(con, assignment);
+                result.add(assignment);
             }
         }
         return result;
@@ -171,9 +173,9 @@ public class Generator {
     private List<Course> generateCourses(Connection connection) throws SQLException {
         List<Course> result = new ArrayList<>();
         for (Map.Entry<String, String> entry : COURSES.entrySet()) {
-            String k = entry.getKey();
-            String v = entry.getValue();
-            result.add(courseDao.save(connection, new Course(k, v)));
+            Course course = new Course(entry.getKey(), entry.getValue());
+            courseDao.save(connection, course);
+            result.add(course);
         }
         return result;
     }
@@ -182,8 +184,9 @@ public class Generator {
         List<Group> result = new ArrayList<>();
 
         for (long i = 0; i < count; i++) {
-            String groupName = generateGroupName();
-            result.add(groupDao.save(connection, new Group(groupName)));
+            Group group = new Group(generateGroupName());
+            groupDao.save(connection, group);
+            result.add(group);
         }
 
         return result;
@@ -211,7 +214,9 @@ public class Generator {
                     groupId = null;
                 }
             }
-            result.add(studentDao.save(connection, new Student(firstName, lastName, groupId)));
+            Student student = new Student(firstName, lastName, groupId);
+            studentDao.save(connection, student);
+            result.add(student);
             studentsPerGroup--;
         }
         return result;

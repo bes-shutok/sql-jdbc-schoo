@@ -12,12 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class GroupDaoImplTest extends DaoTest {
 
-    /**
-     * {@link GroupDaoImpl#create(Connection, Group)} is invoked in the parent class
-     * in {@link DaoTest#generateTestingData()}
-     */
     @Test
-    void shouldCreateAndFindAll() throws SQLException {
+    void shouldFindAll() throws SQLException {
         try (Connection con = datasource.getConnection()) {
             List<Group> groups = groupDao.findAll(con);
             assertEquals(1, groups.size());
@@ -36,17 +32,6 @@ class GroupDaoImplTest extends DaoTest {
             Group updatedGroup = new Group(id, NEW_GROUP_NAME);
             groupDao.save(con, updatedGroup);
             assertEquals(updatedGroup, groupDao.findAll(con).get(0));
-        }
-    }
-
-    @Test
-    void shouldDeleteById() throws SQLException  {
-        try (Connection con = datasource.getConnection()) {
-            Group foundGroup = groupDao.findAll(con).get(0);
-            Long id = foundGroup.getId();
-            assertNotNull(id);
-            groupDao.deleteById(con, id);
-            assertTrue(groupDao.findAll(con).isEmpty());
         }
     }
 
@@ -70,6 +55,24 @@ class GroupDaoImplTest extends DaoTest {
             Optional<Group> foundGroup = groupDao.findByName(con, GROUP_NAME);
             assertTrue(foundGroup.isPresent());
             assertEquals(GROUP_NAME, foundGroup.get().getName());
+        }
+    }
+
+    @Test
+    void shouldFindAllDeleteByIdAndCreate() throws SQLException  {
+        try (Connection con = datasource.getConnection()) {
+            Group foundGroup = groupDao.findAll(con).get(0);
+            Long id = foundGroup.getId();
+            assertNotNull(id);
+            groupDao.deleteById(con, id);
+            assertTrue(groupDao.findAll(con).isEmpty());
+            Group newGroup = new Group(NEW_GROUP_NAME);
+            groupDao.save(con, newGroup);
+            List<Group> groups = groupDao.findAll(con);
+            assertEquals(1, groups.size());
+            foundGroup = groups.get(0);
+            newGroup.setId(foundGroup.getId());
+            assertEquals(newGroup, foundGroup);
         }
     }
 }

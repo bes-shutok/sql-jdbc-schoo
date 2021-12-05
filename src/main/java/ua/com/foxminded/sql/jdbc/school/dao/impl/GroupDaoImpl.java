@@ -5,8 +5,8 @@ import ua.com.foxminded.sql.jdbc.school.dao.GroupDao;
 import ua.com.foxminded.sql.jdbc.school.model.Group;
 import ua.com.foxminded.sql.jdbc.school.utils.SqlUtils;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,63 +29,44 @@ public class GroupDaoImpl extends AbstractCrudDao<Group, Long> implements GroupD
     private static final String DELETE_GROUP = "DELETE FROM " + Group.TABLE_NAME + " WHERE " + Group.GROUP_ID + " = ?;";
 
     @Override
-    protected Group create(Connection connection, Group entity) throws SQLException {
-        SqlUtils.executeUpdate(connection, CREATE_GROUP, entity.getName());
-        return entity;
+    protected void create(Connection con, Group entity) throws SQLException {
+        SqlUtils.executeDmlQuery(con, CREATE_GROUP, new Object[] {entity.getName()});
     }
 
     @Override
-    protected Group update(Connection connection, Group entity) throws SQLException {
-        SqlUtils.executeUpdate(connection, UPDATE_GROUP, entity.getName(), entity.getId());
-        return entity;
+    protected void update(Connection con, Group entity) throws SQLException {
+        SqlUtils.executeDmlQuery(con, UPDATE_GROUP, new Object[] {entity.getName(), entity.getId()});
     }
 
     @Override
-    public void deleteById(Connection connection, Long id) throws SQLException {
-        SqlUtils.executeUpdate(connection, DELETE_GROUP, id);
+    public void deleteById(Connection con, Long id) throws SQLException {
+        SqlUtils.executeDmlQuery(con, DELETE_GROUP, new Object[] {id});
     }
 
-    /**
-     * Here we need to parse {@link ResultSet} at place. We still could use {@link SqlUtils} method by providing
-     * it with {@link ResultSet} mapper but in this case we would be providing parameters as Objects
-     * (to generalize the method) and thus lose type validation. All in all it is more readable as it is here
-     */
     @Override
     public List<Group> findAll(Connection con) throws SQLException {
-        List<Group> result = new ArrayList<>();
-        try (PreparedStatement st = con.prepareStatement(ALL_GROUPS)) {
-            ResultSet resultSet = st.executeQuery();
-            while (resultSet.next()) {
-                result.add(new Group(resultSet.getLong(Group.GROUP_ID), resultSet.getString(Group.GROUP_NAME)));
-            }
-        }
-        return result;
+        return SqlUtils.executeQuery(con, ALL_GROUPS, new Object[0], Group::getGroups);
     }
 
     @Override
     public Optional<Group> findById(Connection con, Long id) throws SQLException {
-        Optional<Group> result = Optional.empty();
-        try (PreparedStatement st = con.prepareStatement(FIND_GROUP_BY_ID)) {
-            st.setLong(1, id);
-            ResultSet resultSet = st.executeQuery();
-            if (resultSet.next()) {
-                result = Optional.of(new Group(id, resultSet.getString(Group.GROUP_NAME)));
-            }
-        }
-        return result;
+        return SqlUtils.executeQuery(
+                con,
+                FIND_GROUP_BY_ID,
+                new Object[] {id},
+                resultSet -> SqlUtils.getOptionalResult(resultSet, Group::getGroup)
+        );
     }
 
     @Override
     public Optional<Group> findByName(Connection con, String name) throws SQLException {
-        Optional<Group> result = Optional.empty();
-        try (PreparedStatement st = con.prepareStatement(FIND_GROUP_BY_NAME)) {
-            st.setString(1, name);
-            ResultSet resultSet = st.executeQuery();
-            if (resultSet.next()) {
-                result = Optional.of(new Group(resultSet.getLong(Group.GROUP_ID), name));
-            }
-        }
-        return result;
+        return SqlUtils.executeQuery(
+                con,
+                FIND_GROUP_BY_NAME,
+                new Object[] {name},
+                resultSet -> SqlUtils.getOptionalResult(resultSet, Group::getGroup)
+        );
     }
+
 }
 

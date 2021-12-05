@@ -3,6 +3,7 @@ package ua.com.foxminded.sql.jdbc.school;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import ua.com.foxminded.sql.jdbc.school.dao.Datasource;
+import ua.com.foxminded.sql.jdbc.school.dao.SimpleDatasource;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,7 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PostgresDatabaseContainer extends PostgreSQLContainer<PostgresDatabaseContainer> {
+    private static final String DRIVER_CLASS_NAME = "driver-class-name";
+    private static final String USERNAME = "user";
+    private static final String PASSWORD = "password";
     private static final String IMAGE_VERSION = "postgres:13";
+
     private static PostgresDatabaseContainer container;
 
     private PostgresDatabaseContainer() {
@@ -29,20 +34,20 @@ public class PostgresDatabaseContainer extends PostgreSQLContainer<PostgresDatab
         return container;
     }
 
-    public static DatasourceForTests setupDB() throws ClassNotFoundException {
+    public static SimpleDatasource setupDB() {
         PostgresDatabaseContainer container = PostgresDatabaseContainer.getInstance();
 
         Properties properties = new Properties();
-        properties.setProperty(DatasourceForTests.DRIVER_CLASS_NAME, container.getDriverClassName());
-        properties.setProperty(DatasourceForTests.URL, container.getJdbcUrl());
-        properties.setProperty(DatasourceForTests.USERNAME, container.getUsername());
-        properties.setProperty(DatasourceForTests.PASSWORD, container.getPassword());
+        properties.setProperty(DRIVER_CLASS_NAME, container.getDriverClassName());
+        properties.setProperty(SimpleDatasource.JDBC_URL, container.getJdbcUrl());
+        properties.setProperty(USERNAME, container.getUsername());
+        properties.setProperty(PASSWORD, container.getPassword());
 
-        return new DatasourceForTests(properties);
+        return new SimpleDatasource(properties);
     }
 
     @Test
-    void testContainers() throws SQLException, ClassNotFoundException {
+    void testContainers() throws SQLException {
         Datasource datasource = setupDB();
         test(datasource);
     }

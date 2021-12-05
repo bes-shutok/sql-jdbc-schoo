@@ -5,8 +5,10 @@ import ua.com.foxminded.sql.jdbc.school.dao.impl.CourseDaoImpl;
 import ua.com.foxminded.sql.jdbc.school.dao.impl.GroupDaoImpl;
 import ua.com.foxminded.sql.jdbc.school.dao.impl.StudentAssignmentDaoImpl;
 import ua.com.foxminded.sql.jdbc.school.dao.impl.StudentDaoImpl;
+import ua.com.foxminded.sql.jdbc.school.model.Course;
 import ua.com.foxminded.sql.jdbc.school.model.Group;
 import ua.com.foxminded.sql.jdbc.school.model.Student;
+import ua.com.foxminded.sql.jdbc.school.model.StudentAssignment;
 import ua.com.foxminded.sql.jdbc.school.utils.Generator;
 import ua.com.foxminded.sql.jdbc.school.utils.SqlUtils;
 import ua.com.foxminded.sql.jdbc.school.utils.UserHandler;
@@ -23,6 +25,7 @@ import java.util.Scanner;
 import static ua.com.foxminded.sql.jdbc.school.utils.ResourceUtils.loadPropertiesFromResources;
 import static ua.com.foxminded.sql.jdbc.school.utils.TransactionUtils.transaction;
 
+@SuppressWarnings("RedundantStringFormatCall")
 public class SchoolApp implements Closeable {
 
     public static final String DROP_SCHEMA = "sql/drop_schema.sql";
@@ -99,26 +102,18 @@ public class SchoolApp implements Closeable {
 
             // b. Find all students related to course with given name
             case "b" ->  findAllStudentsRelatedToCourseWithGivenName(datasource, userHandler);
-/*
             // c. Add new student
-            case "c":
-                addNewStudent(reader);
-                break;
+            case "c" ->  addNewStudent(datasource, userHandler);
 
             // d. Delete student by STUDENT_ID
-            case "d":
-                deleteStudentByStudentId(reader);
-                break;
+            case "d" ->  deleteStudentByStudentId(datasource, userHandler);
 
             // e. Add a student to the course (from a list)
-            case "e":
-                addAStudentToTheCourseFromAList(reader);
-                break;
+            case "e" ->  addAStudentToTheCourseFromAList(datasource, userHandler);
 
             // f. Remove the student from one of his or her courses
-            case "f":
-                removeStudentFromCourse(reader);
-                break;*/
+            case "f" ->  removeStudentFromCourse(datasource, userHandler);
+
             default -> throw new IllegalStateException("Unexpected value: " + getUserAnswer(reader, expectedAnswers));
         }
     }
@@ -143,8 +138,75 @@ public class SchoolApp implements Closeable {
         Scanner myInput = new Scanner(System.in);
         System.out.print("Find all student related to course with given name.\nEnter course name: ");
         String courseName = myInput.next();
-        List<Student> students = userHandler.findAllStudentsForGroup(datasource, courseName);
+        List<Student> students = userHandler.findAllStudentsRelatedToCourse(datasource, courseName);
         System.out.println("Groups with less or equals student count:\n" + students);
+    }
+
+    /**
+     * Add new student
+     */
+    private void addNewStudent(Datasource datasource, UserHandler userHandler)
+            throws SQLException {
+        Scanner myInput = new Scanner(System.in);
+        System.out.print("Add new student.\nEnter firstName of the student: ");
+        String firstName = myInput.next();
+        System.out.print("Add new student.\nEnter lastName of the student: ");
+        String lastName = myInput.next();
+        Student student = userHandler.addNewStudent(datasource, new Student(firstName, lastName));
+        System.out.println("The student added: " + student);
+    }
+
+    /**
+     * Delete student by STUDENT_ID
+     */
+    private void deleteStudentByStudentId(Datasource datasource, UserHandler userHandler)
+            throws SQLException {
+        Scanner myInput = new Scanner(System.in);
+        List<Student> students = userHandler.allStudents();
+        System.out.print(String.format("Delete student by STUDENT_ID%nList of active students:%n%s", students));
+        System.out.print(String.format("%nEnter STUDENT_ID of the student to be deleted:%n"));
+        Long studentId = myInput.nextLong();
+        Student student = userHandler.deleteStudent(datasource, studentId);
+        System.out.println(String.format("Student [%s] has been deleted from the list of active students", student));
+    }
+
+    /**
+     * Add a student to the course (from a list)
+     */
+    private void addAStudentToTheCourseFromAList(Datasource datasource, UserHandler userHandler)
+            throws SQLException {
+        Scanner myInput = new Scanner(System.in);
+        List<Student> students = userHandler.allStudents();
+        List<Course> courses = userHandler.allCourses();
+        System.out.print(String.format("Add a student to the course%nHere is the list of active students:%n%s", students));
+        System.out.print(String.format("%nEnter STUDENT_ID of the student to be updated:%n"));
+        Long studentId = myInput.nextLong();
+        System.out.print(String.format("Add a student to the course%nHere is the list of courses:%n%s", courses));
+        System.out.print(String.format("%nEnter COURSE_ID of the course which should be assigned " +
+                "to the chosen student%n"));
+        Long courseId = myInput.nextLong();
+        students = userHandler.addStudentToTheCourse(datasource, studentId, courseId);
+        System.out.println(String.format("Here is the list students assigned to the course:%n%s", students));
+    }
+
+    /**
+     * Remove the student from one of his or her courses
+     */
+    private void removeStudentFromCourse(Datasource datasource, UserHandler userHandler)
+            throws SQLException {
+        Scanner myInput = new Scanner(System.in);
+        List<Student> students = userHandler.allStudents();
+        System.out.print(String.format("Remove the student from one of his or her courses%n" +
+                "Here is the list of active students:%n%s", students));
+        System.out.print(String.format("%nEnter STUDENT_ID of the student to be updated:%n"));
+        Long studentId = myInput.nextLong();
+        List<Course> courses = userHandler.courses(studentId);
+        System.out.print(String.format("Remove the student from one of his or her courses%n" +
+                "Here is the list of active courses for the student:%n%s", courses));
+        System.out.print(String.format("%nEnter COURSE_ID of the course from which the student should be removed%n"));
+        Long courseId = myInput.nextLong();
+        List<StudentAssignment> studentAssignments = userHandler.removeStudentFromCourse(datasource, studentId, courseId);
+        System.out.println(String.format("Here is the list studentAssignments for the student:%n%s", studentAssignments));
     }
 
     private static String getUserAnswer(BufferedReader reader, List<String> expectedAnswers) {

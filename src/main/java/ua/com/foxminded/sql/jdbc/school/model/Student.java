@@ -1,6 +1,12 @@
 package ua.com.foxminded.sql.jdbc.school.model;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+
+import static ua.com.foxminded.sql.jdbc.school.model.Group.GROUP_ID;
 
 public class Student extends LongEntity {
     public static final String TABLE_NAME = "students";
@@ -59,5 +65,38 @@ public class Student extends LongEntity {
     @Override
     public String toString() {
         return String.format("%n%s %s (group %d)", firstName, lastName, groupId);
+    }
+
+    public static List<Student> getStudents(ResultSet resultSet) throws SQLException {
+        List<Student> list = new ArrayList<>();
+        while (resultSet.next()) {
+            list.add(getStudent(resultSet));
+        }
+        return list;
+    }
+
+    public static  Student getStudent(ResultSet resultSet) throws SQLException {
+        return new Student(
+                resultSet.getLong(Student.STUDENT_ID),
+                resultSet.getString(Student.FIRST_NAME),
+                resultSet.getString(Student.LAST_NAME),
+                resultSet.getLong(GROUP_ID)
+        );
+    }
+
+    public static List<Student> getStudentsById(ResultSet resultSet) throws SQLException {
+        List<Student> list = new ArrayList<>();
+        while (resultSet.next()) {
+            list.add(getStudentById(resultSet));
+        }
+        return list;
+    }
+    public static  Student getStudentById(ResultSet resultSet) throws SQLException {
+        return new Student(
+                resultSet.getLong(Student.STUDENT_ID),
+                null,
+                null,
+                null
+        );
     }
 }

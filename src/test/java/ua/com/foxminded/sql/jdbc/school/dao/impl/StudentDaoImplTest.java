@@ -13,12 +13,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StudentDaoImplTest extends DaoTest {
 
-    /**
-     * {@link StudentDaoImpl#create(Connection, Student)} is invoked in the parent class
-     * in {@link DaoTest#generateTestingData()}
-     */
     @Test
-    void shouldCreateAndFindAll() throws SQLException {
+    void shouldFindAll() throws SQLException {
         try (Connection con = datasource.getConnection()) {
             List<Student> students = studentDao.findAll(con);
             assertEquals(1, students.size());
@@ -52,18 +48,6 @@ class StudentDaoImplTest extends DaoTest {
     }
 
     @Test
-    void shouldDeleteById() throws SQLException {
-        try (Connection con = datasource.getConnection()) {
-            List<Student> students = studentDao.findAll(con);
-            assertEquals(1, students.size());
-            Student foundStudent = students.get(0);
-            studentDao.deleteById(con, foundStudent.getId());
-            assertEquals(0, studentDao.findAll(con).size());
-            assertTrue(studentDao.findById(con, foundStudent.getId()).isEmpty());
-        }
-    }
-
-    @Test
     void shouldFindById() throws SQLException {
         try (Connection con = datasource.getConnection()) {
             List<Student> students = studentDao.findAll(con);
@@ -76,6 +60,27 @@ class StudentDaoImplTest extends DaoTest {
             assertEquals(foundStudent, optionalStudent.get());
             studentDao.deleteById(con, id);
             assertTrue(studentDao.findById(con, id).isEmpty());
+        }
+    }
+
+    @Test
+    void shouldDeleteByIdAndCreate() throws SQLException {
+        try (Connection con = datasource.getConnection()) {
+            List<Student> students = studentDao.findAll(con);
+            assertEquals(1, students.size());
+            Student foundStudent = students.get(0);
+            studentDao.deleteById(con, foundStudent.getId());
+            students = studentDao.findAll(con);
+            assertEquals(0, students.size());
+            Student newStudent = new Student(STUDENT_FIRST_NAME, STUDENT_LAST_NAME, null);
+            studentDao.save(con, newStudent);
+            students = studentDao.findAll(con);
+            assertEquals(1, students.size());
+            foundStudent = students.get(0);
+            assertEquals(
+                    new Student(foundStudent.getId(), STUDENT_FIRST_NAME, STUDENT_LAST_NAME, null),
+                    foundStudent
+            );
         }
     }
 }

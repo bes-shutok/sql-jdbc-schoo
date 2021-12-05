@@ -16,7 +16,7 @@ public interface CrudDao<T extends Entity<K>, K> {
     List<T> findAll(Connection connection) throws SQLException;
 
     // we treat create and update operation in a single method
-    T save(Connection connection, T entity) throws SQLException;
+    void save(Connection connection, T entity) throws SQLException;
 
     void deleteById(Connection connection, K id) throws SQLException;
 }

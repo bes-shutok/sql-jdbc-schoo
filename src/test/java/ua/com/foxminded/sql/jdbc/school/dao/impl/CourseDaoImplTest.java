@@ -12,12 +12,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class CourseDaoImplTest extends DaoTest {
 
-    /**
-     * {@link CourseDaoImpl#create(Connection, Course)} is invoked in the parent class
-     * in {@link DaoTest#generateTestingData()}
-     */
     @Test
-    void shouldCreateAndFindAll() throws SQLException {
+    void shouldFindAll() throws SQLException {
         try (Connection con = datasource.getConnection()) {
             List<Course> courses = courseDao.findAll(con);
             assertEquals(1, courses.size());
@@ -44,17 +40,6 @@ class CourseDaoImplTest extends DaoTest {
     }
 
     @Test
-    void shouldDeleteById() throws SQLException {
-        try (Connection con = datasource.getConnection()) {
-            Long id = courseDao.findAll(con).get(0).getId();
-            assertNotNull(id);
-            courseDao.deleteById(con, id);
-            assertTrue(courseDao.findById(con, id).isEmpty());
-            assertTrue(courseDao.findAll(con).isEmpty());
-        }
-    }
-
-    @Test
     void shouldFindById() throws SQLException {
         try (Connection con = datasource.getConnection()) {
             Long id = courseDao.findAll(con).get(0).getId();
@@ -65,6 +50,23 @@ class CourseDaoImplTest extends DaoTest {
             assertEquals(expectedCourse, foundCourse.get() );
             courseDao.deleteById(con, id);
             assertTrue(courseDao.findById(con, id).isEmpty());
+        }
+    }
+
+    @Test
+    void shouldDeleteByIdAndCreate() throws SQLException {
+        try (Connection con = datasource.getConnection()) {
+            Long id = courseDao.findAll(con).get(0).getId();
+            assertNotNull(id);
+            courseDao.deleteById(con, id);
+            assertTrue(courseDao.findById(con, id).isEmpty());
+            assertTrue(courseDao.findAll(con).isEmpty());
+            courseDao.save(con, new Course(TEST_COURSE_NAME, TEST_COURSE_DESCRIPTION));
+            List<Course> courses = courseDao.findAll(con);
+            assertEquals(1, courses.size());
+            Course foundCourse = courses.get(0);
+            Course expectedCourse = new Course(foundCourse.getId(), TEST_COURSE_NAME, TEST_COURSE_DESCRIPTION);
+            assertEquals(expectedCourse, foundCourse);
         }
     }
 }

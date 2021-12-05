@@ -11,16 +11,15 @@ import ua.com.foxminded.sql.jdbc.school.model.Student;
 import ua.com.foxminded.sql.jdbc.school.model.StudentAssignment;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class UserHandler {
 
-    private static final String GROUPS_BY_STUDENT_COUNT = "SELECT " + Group.GROUP_ID + " FROM " + Student.TABLE_NAME
+    private static final String GROUPS_BY_STUDENT_COUNT = "SELECT " + Group.GROUP_ID  + " FROM " + Student.TABLE_NAME
             + " WHERE " + Group.GROUP_ID + " IS NOT NULL GROUP BY " + Group.GROUP_ID + " HAVING COUNT(*) <= ? ;";
 
     private static final String STUDENTS_FOR_COURSE = "SELECT " + Student.STUDENT_ID + " FROM "
@@ -42,42 +41,80 @@ public class UserHandler {
     }
 
     public List<Group> findAllGroupsByStudentCount(Datasource datasource, int maxNumberOfStudents) throws SQLException {
-        List<Group> result = new ArrayList<>();
-        try (
-                Connection connection = datasource.getConnection();
-                PreparedStatement st = connection.prepareStatement(GROUPS_BY_STUDENT_COUNT)
-        ) {
-            st.setLong(1, maxNumberOfStudents);
-            ResultSet resultSet = st.executeQuery();
-            while (resultSet.next()) {
-                Optional<Group> optionalGroup = groupDao.findById(connection, resultSet.getLong(Group.GROUP_ID));
-                if (optionalGroup.isPresent()) {
-                    result.add(optionalGroup.get());
-                } else {
-                    throw new SQLException("Group not found");
-                }
+        try (Connection con = datasource.getConnection()) {
+            Set<Long> groupIds =
+            SqlUtils.executeQuery(
+                    con,
+                    GROUPS_BY_STUDENT_COUNT,
+                    new Object[] {maxNumberOfStudents},
+                    Group::getGroupsById
+            )
+                    .stream()
+                    .map(Group::getId)
+                    .collect(Collectors.toSet());
+
+            List<Group> groups = new ArrayList<>(groupIds.size());
+            for (Long groupId : groupIds) {
+                groups.add(groupDao.findById(con, groupId).orElseThrow());
             }
+            return groups;
         }
-        return result;
     }
 
-    public List<Student> findAllStudentsForGroup(Datasource datasource, String courseName) throws SQLException {
-        List<Student> result = new ArrayList<>();
-        try (
-                Connection connection = datasource.getConnection();
-                PreparedStatement st = connection.prepareStatement(STUDENTS_FOR_COURSE)
-        ) {
-            st.setString(1, courseName);
-            ResultSet resultSet = st.executeQuery();
-            while (resultSet.next()) {
-                Optional<Student> optionalStudent = studentDao.findById(connection, resultSet.getLong(Student.STUDENT_ID));
-                if (optionalStudent.isPresent()) {
-                    result.add(optionalStudent.get());
-                } else {
-                    throw new SQLException("Group not found");
-                }
+    public List<Student> findAllStudentsRelatedToCourse(Datasource datasource, String courseName) throws SQLException {
+        try (Connection con = datasource.getConnection()) {
+            Set<Long> studentIds =
+                    SqlUtils.executeQuery(
+                            con,
+                            STUDENTS_FOR_COURSE,
+                            new Object[]{courseName},
+                            Student::getStudentsById
+                    )
+                    .stream()
+                    .map(Student::getId)
+                    .collect(Collectors.toSet());
+
+            List<Student> students = new ArrayList<>(studentIds.size());
+            for (Long studentId : studentIds) {
+                students.add(studentDao.findById(con, studentId).orElseThrow());
             }
+            return students;
         }
-        return result;
+    }
+
+    public Student addNewStudent(Datasource datasource, Student student) throws SQLException {
+        return null;
+    }
+
+    public List<Student> allStudents() throws SQLException {
+        return null;
+    }
+
+    public Student deleteStudent(Datasource datasource, Long studentId) throws SQLException {
+        return null;
+    }
+
+    public List<Course> allCourses() throws SQLException {
+        return null;
+    }
+
+    public List<Student> addStudentToTheCourse(
+            Datasource datasource,
+            Long studentId,
+            Long courseId
+    ) throws SQLException {
+        return null;
+    }
+
+    public List<Course> courses(Long studentId) throws SQLException {
+        return null;
+    }
+
+    public List<StudentAssignment> removeStudentFromCourse(
+            Datasource datasource,
+            Long studentId,
+            Long courseId
+    ) throws SQLException {
+        return null;
     }
 }

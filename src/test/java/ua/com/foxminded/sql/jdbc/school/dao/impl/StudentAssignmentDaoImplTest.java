@@ -13,12 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class StudentAssignmentDaoImplTest extends DaoTest {
 
-    /**
-     * {@link StudentAssignmentDaoImpl#create(Connection, StudentAssignment)} is invoked in the parent class
-     * in {@link DaoTest#generateTestingData()}
-     */
     @Test
-    void shouldCreateAndFindAll() throws SQLException {
+    void shouldFindAll() throws SQLException {
         try (Connection con = datasource.getConnection()) {
             List<StudentAssignment> foundStudentAssignment = studentAssignmentDao.findAll(con);
             assertEquals(1, foundStudentAssignment.size());
@@ -29,21 +25,6 @@ class StudentAssignmentDaoImplTest extends DaoTest {
                     ),
                     foundStudentAssignment.get(0)
             );
-        }
-    }
-
-    @Test
-    void shouldDeleteByIds() throws SQLException {
-        try (Connection con = datasource.getConnection()) {
-            List<StudentAssignment> studentAssignments = studentAssignmentDao.findAll(con);
-            assertEquals(1, studentAssignments.size());
-            StudentAssignment foundStudentAssignment = studentAssignments.get(0);
-            studentAssignmentDao.deleteByIds(
-                    con,
-                    foundStudentAssignment.getStudentId(),
-                    foundStudentAssignment.getCourseId()
-            );
-            assertEquals(0, studentAssignmentDao.findAll(con).size());
         }
     }
 
@@ -74,6 +55,24 @@ class StudentAssignmentDaoImplTest extends DaoTest {
                     courseDao.findAll(con).get(0).getId()
             );
             assertTrue(foundStudentAssignment.isEmpty());
+        }
+    }
+
+    @Test
+    void shouldDeleteByIdAndCreate() throws SQLException {
+        try (Connection con = datasource.getConnection()) {
+            List<StudentAssignment> studentAssignments = studentAssignmentDao.findAll(con);
+            assertEquals(1, studentAssignments.size());
+            StudentAssignment foundStudentAssignment = studentAssignments.get(0);
+            long studentId = foundStudentAssignment.getStudentId();
+            long courseId = foundStudentAssignment.getCourseId();
+            studentAssignmentDao.deleteByIds(con, studentId, courseId);
+            assertEquals(0, studentAssignmentDao.findAll(con).size());
+            studentAssignmentDao.create(con, new StudentAssignment(studentId, courseId));
+            Optional<StudentAssignment> optionalStudentAssignment =
+                    studentAssignmentDao.findByIds(con, studentId, courseId);
+            assertTrue(optionalStudentAssignment.isPresent());
+            assertEquals(foundStudentAssignment, optionalStudentAssignment.get());
         }
     }
 }

@@ -5,7 +5,9 @@ import ua.com.foxminded.sql.jdbc.school.dao.CourseDao;
 import ua.com.foxminded.sql.jdbc.school.model.Course;
 import ua.com.foxminded.sql.jdbc.school.utils.SqlUtils;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,44 +29,31 @@ public class CourseDaoImpl extends AbstractCrudDao<Course, Long> implements Cour
             + " = ?;";
 
     @Override
-    protected Course create(Connection connection, Course entity) throws SQLException {
-        SqlUtils.executeUpdate(connection, CREATE_COURSE, entity.getName(), entity.getDescription());
-        return entity;
+    protected void create(Connection con, Course entity) throws SQLException {
+        SqlUtils.executeDmlQuery(
+                con,
+                CREATE_COURSE,
+                new Object[] {entity.getName(), entity.getDescription()}
+        );
     }
 
     @Override
-    protected Course update(Connection connection, Course entity) throws SQLException {
-        SqlUtils.executeUpdate(connection, UPDATE_COURSE,  entity.getName(), entity.getDescription(),
-                entity.getId());
-        return entity;
+    protected void update(Connection con, Course entity) throws SQLException {
+        SqlUtils.executeDmlQuery(
+                con,
+                UPDATE_COURSE,
+                new Object[] {entity.getName(), entity.getDescription(), entity.getId()}
+        );
     }
 
     @Override
-    public void deleteById(Connection connection, Long id) throws SQLException {
-        SqlUtils.executeUpdate(connection, DELETE_COURSE, id);
+    public void deleteById(Connection con, Long id) throws SQLException {
+        SqlUtils.executeDmlQuery(con, DELETE_COURSE, new Object[] {id});
     }
 
-    /**
-     * Here we need to parse {@link ResultSet} at place. We still could use {@link SqlUtils} method by providing
-     * it with {@link ResultSet} mapper but in this case we would be providing parameters as Objects
-     * (to generalize the method) and thus lose type validation. All in all it is more readable as it is here
-     */
     @Override
     public List<Course> findAll(Connection con) throws SQLException {
-        List<Course> result = new ArrayList<>();
-        try (PreparedStatement st = con.prepareStatement(ALL_COURSES)) {
-            ResultSet resultSet = st.executeQuery();
-            while (resultSet.next()) {
-                result.add(
-                        new Course(
-                                resultSet.getLong(Course.COURSE_ID),
-                                resultSet.getString(Course.COURSE_NAME),
-                                resultSet.getString(Course.COURSE_DESCRIPTION)
-                        )
-                );
-            }
-        }
-        return result;
+        return SqlUtils.executeQuery(con, ALL_COURSES, new Object[0], this::getCourses);
     }
 
     /**
@@ -72,20 +61,28 @@ public class CourseDaoImpl extends AbstractCrudDao<Course, Long> implements Cour
      */
     @Override
     public Optional<Course> findById(Connection con, Long id) throws SQLException {
-        Optional<Course> result = Optional.empty();
-        try (PreparedStatement st = con.prepareStatement(FIND_COURSE_BY_ID)) {
-            st.setLong(1, id);
-            ResultSet resultSet = st.executeQuery();
-            if (resultSet.next()) {
-                result = Optional.of(
-                        new Course(
-                                id,
-                                resultSet.getString(Course.COURSE_NAME),
-                                resultSet.getString(Course.COURSE_DESCRIPTION)
-                        )
-                );
-            }
-        }
-        return result;
+        return SqlUtils.executeQuery(
+                con,
+                FIND_COURSE_BY_ID,
+                new Object[] {id},
+                resultSet -> SqlUtils.getOptionalResult(resultSet, this::getCourse)
+        );
     }
+
+    private List<Course> getCourses(ResultSet resultSet) throws SQLException {
+        List<Course> list = new ArrayList<>();
+        while (resultSet.next()) {
+            list.add(getCourse(resultSet));
+        }
+        return list;
+    }
+
+    private Course getCourse(ResultSet resultSet) throws SQLException {
+        return new Course(
+                resultSet.getLong(Course.COURSE_ID),
+                resultSet.getString(Course.COURSE_NAME),
+                resultSet.getString(Course.COURSE_DESCRIPTION)
+        );
+    }
+
 }

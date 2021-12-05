@@ -5,8 +5,8 @@ import ua.com.foxminded.sql.jdbc.school.dao.StudentDao;
 import ua.com.foxminded.sql.jdbc.school.model.Student;
 import ua.com.foxminded.sql.jdbc.school.utils.SqlUtils;
 
-import java.sql.*;
-import java.util.ArrayList;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,67 +29,41 @@ public class StudentDaoImpl extends AbstractCrudDao<Student, Long> implements St
             + " WHERE " + Student.STUDENT_ID + " = ?;";
 
     @Override
-    protected Student create(Connection connection, Student entity) throws SQLException {
-        SqlUtils.executeUpdate(
-                connection, CREATE_STUDENT, entity.getFirstName(), entity.getLastName(), entity.getGroupId()
+    protected void create(Connection con, Student entity) throws SQLException {
+        SqlUtils.executeDmlQuery(
+                con,
+                CREATE_STUDENT,
+                new Object[] {entity.getFirstName(), entity.getLastName(), entity.getGroupId()}
         );
-        return entity;
     }
 
     @Override
-    protected Student update(Connection con, Student entity) throws SQLException {
-        SqlUtils.executeUpdate(
-                con, UPDATE_STUDENT, entity.getFirstName(), entity.getLastName(), entity.getGroupId(), entity.getId()
+    protected void update(Connection con, Student entity) throws SQLException {
+        SqlUtils.executeDmlQuery(
+                con,
+                UPDATE_STUDENT,
+                new Object[] {entity.getFirstName(), entity.getLastName(), entity.getGroupId(), entity.getId()}
         );
-        return entity;
     }
 
     @Override
-    public void deleteById(Connection connection, Long id) throws SQLException {
-        SqlUtils.executeUpdate(connection, DELETE_STUDENT, id);
+    public void deleteById(Connection con, Long id) throws SQLException {
+        SqlUtils.executeDmlQuery(con, DELETE_STUDENT, new Object[] {id});
     }
 
-    /**
-     * Here we need to parse {@link ResultSet} at place. We still could use {@link SqlUtils} method by providing
-     * it with {@link ResultSet} mapper but in this case we would be providing parameters as Objects
-     * (to generalize the method) and thus lose type validation. All in all it is more readable as it is here
-     */
     @Override
     public List<Student> findAll(Connection con) throws SQLException {
-        List<Student> result = new ArrayList<>();
-        try (PreparedStatement st = con.prepareStatement(ALL_STUDENTS)) {
-            ResultSet resultSet = st.executeQuery();
-            while (resultSet.next()) {
-                result.add(
-                        new Student(
-                                resultSet.getLong(Student.STUDENT_ID),
-                                resultSet.getString(Student.FIRST_NAME),
-                                resultSet.getString(Student.LAST_NAME),
-                                resultSet.getLong(GROUP_ID)
-                        )
-                );
-            }
-        }
-        return result;
+        return SqlUtils.executeQuery(con, ALL_STUDENTS, new Object[0], Student::getStudents);
     }
 
     @Override
     public Optional<Student> findById(Connection con, Long id) throws SQLException {
-        Optional<Student> result = Optional.empty();
-        try (PreparedStatement st = con.prepareStatement(FIND_STUDENT_BY_ID)) {
-            st.setLong(1, id);
-            ResultSet resultSet = st.executeQuery();
-            if (resultSet.next()) {
-                result = Optional.of(
-                        new Student(
-                                id,
-                                resultSet.getString(Student.FIRST_NAME),
-                                resultSet.getString(Student.LAST_NAME),
-                                resultSet.getLong(GROUP_ID)
-                        )
-                );
-            }
-        }
-        return result;
+        return SqlUtils.executeQuery(
+                con,
+                FIND_STUDENT_BY_ID,
+                new Object[] {id},
+                resultSet -> SqlUtils.getOptionalResult(resultSet, Student::getStudent)
+        );
     }
+
 }

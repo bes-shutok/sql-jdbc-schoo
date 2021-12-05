@@ -4,12 +4,14 @@ import ua.com.foxminded.sql.jdbc.school.dao.StudentAssignmentDao;
 import ua.com.foxminded.sql.jdbc.school.model.StudentAssignment;
 import ua.com.foxminded.sql.jdbc.school.utils.SqlUtils;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static ua.com.foxminded.sql.jdbc.school.model.Course.*;
+import static ua.com.foxminded.sql.jdbc.school.model.Course.COURSE_ID;
 import static ua.com.foxminded.sql.jdbc.school.model.Student.STUDENT_ID;
 
 public class StudentAssignmentDaoImpl implements StudentAssignmentDao {
@@ -25,14 +27,17 @@ public class StudentAssignmentDaoImpl implements StudentAssignmentDao {
             + " WHERE " + STUDENT_ID + " = ? AND " + COURSE_ID + " = ?;";
 
     @Override
-    public StudentAssignment create(Connection connection, StudentAssignment entity) throws SQLException {
-        SqlUtils.executeUpdate(connection, CREATE_STUDENT_ASSIGNMENT, entity.getStudentId(), entity.getCourseId());
-        return entity;
+    public void create(Connection con, StudentAssignment entity) throws SQLException {
+        SqlUtils.executeDmlQuery(
+                con,
+                CREATE_STUDENT_ASSIGNMENT,
+                new Object[] {entity.getStudentId(), entity.getCourseId()}
+        );
     }
 
     @Override
-    public void deleteByIds(Connection connection, Long studentId, Long courseId) throws SQLException {
-        SqlUtils.executeUpdate(connection, DELETE_STUDENT_ASSIGNMENT, studentId, courseId);
+    public void deleteByIds(Connection con, Long studentId, Long courseId) throws SQLException {
+        SqlUtils.executeDmlQuery(con, DELETE_STUDENT_ASSIGNMENT, new Object[] {studentId, courseId});
     }
 
     /**
@@ -42,28 +47,28 @@ public class StudentAssignmentDaoImpl implements StudentAssignmentDao {
      */
     @Override
     public List<StudentAssignment> findAll(Connection con) throws SQLException {
-        List<StudentAssignment> result = new ArrayList<>();
-        try (PreparedStatement st = con.prepareStatement(ALL_STUDENT_ASSIGNMENTS)) {
-            ResultSet resultSet = st.executeQuery();
-            while (resultSet.next()) {
-                result.add(new StudentAssignment(resultSet.getLong(STUDENT_ID), resultSet.getLong(COURSE_ID)));
-            }
-        }
-        return result;
+        return SqlUtils.executeQuery(con, ALL_STUDENT_ASSIGNMENTS, new Object[0], this::getStudentAssignments);
     }
 
     @Override
     public Optional<StudentAssignment> findByIds(Connection con, Long studentId, Long courseId) throws SQLException {
-        Optional<StudentAssignment> result = Optional.empty();
-        try (PreparedStatement st = con.prepareStatement(FIND_STUDENT_ASSIGNMENT)) {
-            st.setLong(1, studentId);
-            st.setLong(2, courseId);
-            ResultSet resultSet = st.executeQuery();
-            if (resultSet.next()) {
-                result = Optional.of(new StudentAssignment(studentId, courseId));
-            }
-        }
-        return result;
+        return SqlUtils.executeQuery(
+                con,
+                FIND_STUDENT_ASSIGNMENT,
+                new Object[] {studentId, courseId},
+                resultSet -> SqlUtils.getOptionalResult(resultSet, this::getStudentAssignment)
+        );
     }
 
+    private List<StudentAssignment> getStudentAssignments(ResultSet resultSet) throws SQLException {
+        List<StudentAssignment> list = new ArrayList<>();
+        while (resultSet.next()) {
+            list.add(getStudentAssignment(resultSet));
+        }
+        return list;
+    }
+
+    private StudentAssignment getStudentAssignment(ResultSet resultSet) throws SQLException {
+        return new StudentAssignment(resultSet.getLong(STUDENT_ID), resultSet.getLong(COURSE_ID));
+    }
 }
