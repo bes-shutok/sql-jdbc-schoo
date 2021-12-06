@@ -42,4 +42,9 @@ public class Course extends LongEntity {
     public int hashCode() {
         return Objects.hash(super.hashCode(), getName(), getDescription());
     }
+
+    @Override
+    public String toString() {
+        return String.format("%nCourse %s (%s %d, %s %s)", name, COURSE_ID, getId(), COURSE_DESCRIPTION, description);
+    }
 }

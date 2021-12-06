@@ -17,6 +17,7 @@ import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Properties;
@@ -37,7 +38,8 @@ public class SchoolApp implements Closeable {
             c. Add new student
             d. Delete student by STUDENT_ID
             e. Add a student to the course (from a list)
-            f. Remove the student from one of his or her courses""";
+            f. Remove the student from one of his or her courses
+            z. Exit""";
 
     private final Datasource datasource;
     private final GroupDao groupDao;
@@ -88,33 +90,38 @@ public class SchoolApp implements Closeable {
         transaction(datasource, (generator::assignStudents));
         System.out.println("Test data generated");
 
-        // show menu in a loop
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-/*        String YES = "Yes";
-        String NO = "No";*/
-        List<String> expectedAnswers = List.of("a", "b", "c", "d", "e", "f");
+        List<String> expectedAnswers = List.of("a", "b", "c", "d", "e", "f", "z");
 
-//todo:
-        System.out.println("Chose from available actions menu:\n" + MENU);
-        switch (getUserAnswer(reader, expectedAnswers)) {
-            // a. Find all groups with less or equals student count
-            case "a" -> findAllGroupsWithLessOrEqualStudentCount(datasource, userHandler);
+        boolean exit = false;
 
-            // b. Find all students related to course with given name
-            case "b" ->  findAllStudentsRelatedToCourseWithGivenName(datasource, userHandler);
-            // c. Add new student
-            case "c" ->  addNewStudent(datasource, userHandler);
+        while (!exit) {
+            System.out.println("Chose from available actions menu:\n" + MENU);
+            switch (getUserAnswer(reader, expectedAnswers)) {
+                // a. Find all groups with less or equals student count
+                case "a" -> findAllGroupsWithLessOrEqualStudentCount(datasource, userHandler);
 
-            // d. Delete student by STUDENT_ID
-            case "d" ->  deleteStudentByStudentId(datasource, userHandler);
+                // b. Find all students related to course with given name
+                case "b" -> findAllStudentsRelatedToCourseWithGivenName(datasource, userHandler);
 
-            // e. Add a student to the course (from a list)
-            case "e" ->  addAStudentToTheCourseFromAList(datasource, userHandler);
+                // c. Add new student
+                case "c" -> addNewStudent(datasource, userHandler);
 
-            // f. Remove the student from one of his or her courses
-            case "f" ->  removeStudentFromCourse(datasource, userHandler);
+                // d. Delete student by STUDENT_ID
+                case "d" -> deleteStudentByStudentId(datasource, userHandler);
 
-            default -> throw new IllegalStateException("Unexpected value: " + getUserAnswer(reader, expectedAnswers));
+                // e. Add a student to the course (from a list)
+                case "e" -> addAStudentToTheCourseFromAList(datasource, userHandler);
+
+                // f. Remove the student from one of his or her courses
+                case "f" -> removeStudentFromCourse(datasource, userHandler);
+
+                // z. Exit menu
+                case "z" -> exit = true;
+
+                default -> throw new IllegalStateException("Unexpected value: "
+                        + getUserAnswer(reader, expectedAnswers));
+            }
         }
     }
 
@@ -124,10 +131,10 @@ public class SchoolApp implements Closeable {
     private static void findAllGroupsWithLessOrEqualStudentCount(Datasource datasource, UserHandler userHandler)
             throws SQLException {
         Scanner myInput = new Scanner(System.in);
-        System.out.print("Find all groups with less or equals student count.\nEnter student count: ");
+        System.out.print(String.format("Find all groups with less or equals student count.%nEnter student count:%n"));
         int maxNumberOfStudents = myInput.nextInt();
-        List<Group> groups = userHandler.findAllGroupsByStudentCount(datasource, maxNumberOfStudents);
-        System.out.println("Groups with less or equals student count:\n" + groups);
+        List<Group> groups = userHandler.lookupGroupsByStudentCount(datasource, maxNumberOfStudents);
+        System.out.println(String.format("Groups with less or equals student count:%n%s%n", groups));
     }
 
     /**
@@ -136,10 +143,10 @@ public class SchoolApp implements Closeable {
     private void findAllStudentsRelatedToCourseWithGivenName(Datasource datasource, UserHandler userHandler)
             throws SQLException {
         Scanner myInput = new Scanner(System.in);
-        System.out.print("Find all student related to course with given name.\nEnter course name: ");
+        System.out.print(String.format("Find all student related to course with given name.%nEnter course name: %n"));
         String courseName = myInput.next();
-        List<Student> students = userHandler.findAllStudentsRelatedToCourse(datasource, courseName);
-        System.out.println("Groups with less or equals student count:\n" + students);
+        List<Student> students = userHandler.lookupStudentsRelatedToCourse(datasource, courseName);
+        System.out.println(String.format("Groups with less or equals student count:%n%s", students));
     }
 
     /**
@@ -148,12 +155,12 @@ public class SchoolApp implements Closeable {
     private void addNewStudent(Datasource datasource, UserHandler userHandler)
             throws SQLException {
         Scanner myInput = new Scanner(System.in);
-        System.out.print("Add new student.\nEnter firstName of the student: ");
+        System.out.print(String.format("Add new student.%nEnter firstName of the student:%n"));
         String firstName = myInput.next();
-        System.out.print("Add new student.\nEnter lastName of the student: ");
+        System.out.print(String.format("Add new student.%nEnter lastName of the student:%n"));
         String lastName = myInput.next();
         Student student = userHandler.addNewStudent(datasource, new Student(firstName, lastName));
-        System.out.println("The student added: " + student);
+        System.out.println(String.format("The student added:%s%n", student));
     }
 
     /**
@@ -162,7 +169,7 @@ public class SchoolApp implements Closeable {
     private void deleteStudentByStudentId(Datasource datasource, UserHandler userHandler)
             throws SQLException {
         Scanner myInput = new Scanner(System.in);
-        List<Student> students = userHandler.allStudents();
+        List<Student> students = userHandler.allStudents(datasource);
         System.out.print(String.format("Delete student by STUDENT_ID%nList of active students:%n%s", students));
         System.out.print(String.format("%nEnter STUDENT_ID of the student to be deleted:%n"));
         Long studentId = myInput.nextLong();
@@ -176,8 +183,8 @@ public class SchoolApp implements Closeable {
     private void addAStudentToTheCourseFromAList(Datasource datasource, UserHandler userHandler)
             throws SQLException {
         Scanner myInput = new Scanner(System.in);
-        List<Student> students = userHandler.allStudents();
-        List<Course> courses = userHandler.allCourses();
+        List<Student> students = userHandler.allStudents(datasource);
+        List<Course> courses = userHandler.allCourses(datasource);
         System.out.print(String.format("Add a student to the course%nHere is the list of active students:%n%s", students));
         System.out.print(String.format("%nEnter STUDENT_ID of the student to be updated:%n"));
         Long studentId = myInput.nextLong();
@@ -185,8 +192,14 @@ public class SchoolApp implements Closeable {
         System.out.print(String.format("%nEnter COURSE_ID of the course which should be assigned " +
                 "to the chosen student%n"));
         Long courseId = myInput.nextLong();
-        students = userHandler.addStudentToTheCourse(datasource, studentId, courseId);
-        System.out.println(String.format("Here is the list students assigned to the course:%n%s", students));
+        StudentAssignment studentAssignment = userHandler.addStudentToTheCourse(datasource, studentId, courseId);
+        Student student;
+        Course course;
+        try (Connection con = datasource.getConnection()) {
+            student = studentDao.findById(con, studentAssignment.getStudentId()).orElseThrow();
+            course = courseDao.findById(con, studentAssignment.getCourseId()).orElseThrow();
+        }
+        System.out.println(String.format("The student %s was added to the course %s:%n", student, course));
     }
 
     /**
@@ -195,18 +208,19 @@ public class SchoolApp implements Closeable {
     private void removeStudentFromCourse(Datasource datasource, UserHandler userHandler)
             throws SQLException {
         Scanner myInput = new Scanner(System.in);
-        List<Student> students = userHandler.allStudents();
+        List<Student> students = userHandler.allStudents(datasource);
         System.out.print(String.format("Remove the student from one of his or her courses%n" +
                 "Here is the list of active students:%n%s", students));
         System.out.print(String.format("%nEnter STUDENT_ID of the student to be updated:%n"));
         Long studentId = myInput.nextLong();
-        List<Course> courses = userHandler.courses(studentId);
+        List<Course> courses = userHandler.courses(datasource, studentId);
         System.out.print(String.format("Remove the student from one of his or her courses%n" +
                 "Here is the list of active courses for the student:%n%s", courses));
         System.out.print(String.format("%nEnter COURSE_ID of the course from which the student should be removed%n"));
         Long courseId = myInput.nextLong();
-        List<StudentAssignment> studentAssignments = userHandler.removeStudentFromCourse(datasource, studentId, courseId);
-        System.out.println(String.format("Here is the list studentAssignments for the student:%n%s", studentAssignments));
+        courses = userHandler.removeStudentFromCourse(datasource, studentId, courseId);
+        System.out.println(String.format("The student is removed from course the course." +
+                " Here is the list of actual courses for the student:%n%s", courses));
     }
 
     private static String getUserAnswer(BufferedReader reader, List<String> expectedAnswers) {

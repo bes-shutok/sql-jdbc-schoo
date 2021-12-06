@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class UserHandler {
@@ -40,7 +41,7 @@ public class UserHandler {
         this.studentAssignmentDao = studentAssignmentDao;
     }
 
-    public List<Group> findAllGroupsByStudentCount(Datasource datasource, int maxNumberOfStudents) throws SQLException {
+    public List<Group> lookupGroupsByStudentCount(Datasource datasource, int maxNumberOfStudents) throws SQLException {
         try (Connection con = datasource.getConnection()) {
             Set<Long> groupIds =
             SqlUtils.executeQuery(
@@ -61,7 +62,7 @@ public class UserHandler {
         }
     }
 
-    public List<Student> findAllStudentsRelatedToCourse(Datasource datasource, String courseName) throws SQLException {
+    public List<Student> lookupStudentsRelatedToCourse(Datasource datasource, String courseName) throws SQLException {
         try (Connection con = datasource.getConnection()) {
             Set<Long> studentIds =
                     SqlUtils.executeQuery(
@@ -83,38 +84,76 @@ public class UserHandler {
     }
 
     public Student addNewStudent(Datasource datasource, Student student) throws SQLException {
-        return null;
+        try (Connection con = datasource.getConnection()) {
+            studentDao.save(con, student);
+            return studentDao
+                    .findAll(con)
+                    .stream()
+                    .filter(getStudentPredicate(student))
+                    .findFirst().orElseThrow();
+        }
     }
 
-    public List<Student> allStudents() throws SQLException {
-        return null;
+    private Predicate<Student> getStudentPredicate(Student student) {
+        return s -> s.getFirstName().equals(student.getFirstName())
+                && s.getLastName().equals(student.getLastName());
+    }
+
+    public List<Student> allStudents(Datasource datasource) throws SQLException {
+        try (Connection con = datasource.getConnection()) {
+            return studentDao.findAll(con);
+        }
     }
 
     public Student deleteStudent(Datasource datasource, Long studentId) throws SQLException {
-        return null;
+        try (Connection con = datasource.getConnection()) {
+            Student student = studentDao.findById(con, studentId).orElseThrow();
+            studentDao.deleteById(con, studentId);
+            return student;
+        }
     }
 
-    public List<Course> allCourses() throws SQLException {
-        return null;
+    public List<Course> allCourses(Datasource datasource) throws SQLException {
+        try (Connection con = datasource.getConnection()) {
+            return courseDao.findAll(con);
+        }
     }
 
-    public List<Student> addStudentToTheCourse(
+    public StudentAssignment addStudentToTheCourse(
             Datasource datasource,
             Long studentId,
             Long courseId
     ) throws SQLException {
-        return null;
+        try (Connection con = datasource.getConnection()) {
+            StudentAssignment studentAssignment = new StudentAssignment(studentId, courseId);
+            studentAssignmentDao.create(con, studentAssignment);
+            return studentAssignment;
+        }
     }
 
-    public List<Course> courses(Long studentId) throws SQLException {
-        return null;
+    public List<Course> courses(Datasource datasource, Long studentId) throws SQLException {
+        try (Connection con = datasource.getConnection()) {
+            List<Long> courseIds = studentAssignmentDao.findAll(con)
+                    .stream()
+                    .filter(sa -> sa.getStudentId().equals(studentId))
+                    .map(StudentAssignment::getCourseId)
+                    .collect(Collectors.toList());
+            List<Course> result = new ArrayList<>(courseIds.size());
+            for (Long courseId : courseIds) {
+                result.add(courseDao.findById(con, courseId).orElseThrow());
+            }
+            return result;
+        }
     }
 
-    public List<StudentAssignment> removeStudentFromCourse(
+    public List<Course> removeStudentFromCourse(
             Datasource datasource,
             Long studentId,
             Long courseId
     ) throws SQLException {
-        return null;
+        try (Connection con = datasource.getConnection()) {
+            studentAssignmentDao.deleteByIds(con, studentId, courseId);
+            return courses(datasource, studentId);
+        }
     }
 }

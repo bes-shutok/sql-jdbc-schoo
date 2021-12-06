@@ -64,7 +64,7 @@ public class Student extends LongEntity {
 
     @Override
     public String toString() {
-        return String.format("%n%s %s (group %d)", firstName, lastName, groupId);
+        return String.format("%n%s %s (%s %d, %s %d)", firstName, lastName, STUDENT_ID, getId(), GROUP_ID, groupId);
     }
 
     public static List<Student> getStudents(ResultSet resultSet) throws SQLException {
